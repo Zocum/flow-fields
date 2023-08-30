@@ -1,7 +1,8 @@
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// make width and height of canvas dynamic while still being divisible by cellSize without remainder
+canvas.width = Math.floor(window.innerWidth / 10) * 10;
+canvas.height = Math.floor(window.innerHeight / 10) * 10;
 
 // canvas settings
 ctx.fillStyle = '#fff';
@@ -21,7 +22,7 @@ class Particle {
         this.angle = 0;
         this.timer = this.maxLength * 2;
         this.colors = ['#fcba03', '#035afc', '#fc03a5'];
-        this.color = this.colors[1]
+        this.color = this.colors[2]
     }
 
     draw(context) {
@@ -79,7 +80,7 @@ class Effect {
         this.height = this.canvas.height;
         this.particles = [];
         this.numberOfParticles = 2000;
-        this.cellSize = 20;
+        this.cellSize = 5;
         this.rows;
         this.cols;
         this.flowField = [];
@@ -106,7 +107,20 @@ class Effect {
         this.context.font = '500px Impact';
         this.context.textAlign = 'center';
         this.context.textBaseline = 'middle';  
-        this.context.fillText('JS', this.width * 0.5, this.height * 0.5);
+        const gradient1 = this.context.createLinearGradient(0, 0, this.width, this.height);
+        gradient1.addColorStop(0.2, 'rgb(255, 0 ,0)');
+        gradient1.addColorStop(0.4, 'rgb(0, 255, 0)');
+        gradient1.addColorStop(0.6, 'rgb(150,100,100)');
+        gradient1.addColorStop(0.8, 'rgb(0,255,255)');
+
+        const gradient2 = this.context.createLinearGradient(0, 0, this.width, this.height);
+        gradient2.addColorStop(0.2, 'rgb(255, 255 ,0)');
+        gradient2.addColorStop(0.4, 'rgb(200, 5, 50)');
+        gradient2.addColorStop(0.6, 'rgb(150, 255, 255)');
+        gradient2.addColorStop(0.8, 'rgb(255,255, 150)');
+
+        this.context.fillStyle = gradient2;
+        this.context.fillText('JS', this.width * 0.5, this.height * 0.5, this.width * 0.8);
     }
 
     initFLowField() {
