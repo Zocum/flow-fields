@@ -1,5 +1,3 @@
-
-
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -43,7 +41,10 @@ class Particle {
             let x = Math.floor(this.x / this.effect.cellSize);
             let y = Math.floor(this.y / this.effect.cellSize);
             let index = y * this.effect.cols + x;
-            this.angle = this.effect.flowField[index];
+            if (this.effect.flowField[index]) {
+                this.angle = this.effect.flowField[index].colorAngle;
+            }
+            
     
             this.speedX = Math.cos(this.angle);
             this.speedY = Math.sin(this.angle);
@@ -84,7 +85,7 @@ class Effect {
         this.flowField = [];
         this.curve = 5;
         this.zoom = 0.07;
-        this.debug = false;
+        this.debug = true;
         this.init();
 
         window.addEventListener('keydown', e => {
@@ -113,12 +114,44 @@ class Effect {
         this.rows = Math.floor(this.height / this.cellSize);
         this.cols = Math.floor(this.width / this.cellSize);
         this.flowField = [];
-        for (let y = 0; y < this.rows; y++) {
-            for (let x = 0; x < this.cols; x++) {
-                let angle = (Math.sin(x * this.zoom) + Math.cos(y * this.zoom)) * this.curve;
-                this.flowField.push(angle);
+
+        // draw text
+        this.drawText();
+
+        // scan pixel data
+        let pixels = this.context.getImageData(0, 0, this.width, this.height);
+        // let data = pixels.data;
+        console.log(pixels)
+
+        for (let y = 0; y < this.height; y += this.cellSize) {
+            for (let x = 0; x < this.width; x += this.cellSize) {
+                let index = (x + y * this.width) * 4;
+                let r = pixels.data[index];
+                let g = pixels.data[index + 1];
+                let b = pixels.data[index + 2];
+                let a = pixels.data[index + 3];
+                const grayscale = (r + g + b) / 3;
+                const colorAngle = ((grayscale / 255) * (Math.PI * 2)).toFixed(2);
+                this.flowField.push({
+                    colorAngle: colorAngle,
+                    x: x,
+                    y: y});
+                // if (r === 255 && g === 255 && b === 255 && a === 255) {
+                //     this.flowField.push(0);
+                // } else {
+                //     this.flowField.push(1);
+                // }
             }
         }
+        console.log(this.flowField)
+        // let index = 0;
+
+        // for (let y = 0; y < this.rows; y++) {
+        //     for (let x = 0; x < this.cols; x++) {
+        //         let angle = (Math.sin(x * this.zoom) + Math.cos(y * this.zoom)) * this.curve;
+        //         this.flowField.push(angle);
+        //     }
+        // }
     }
 
     initParticles() {
@@ -158,7 +191,10 @@ class Effect {
     }
 
     render() {
-       if (this.debug) this.drawGrid();
+       if (this.debug) {
+            this.drawGrid();
+            this.drawText();
+        }
        this.drawText();
         this.particles.forEach(particle => {
             particle.draw(this.context);
